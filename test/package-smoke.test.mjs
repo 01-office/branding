@@ -37,8 +37,16 @@ test("packed package exports a working showBranding function", () => {
 
       const calls = [];
       assert.equal(typeof showBranding, "function");
-      showBranding({ console: { info: (...args) => calls.push(args) } });
-      assert.equal(calls.length, 1);
+      showBranding({
+        console: {
+          group: () => {},
+          info: (...args) => calls.push(args),
+          groupEnd: () => {},
+        },
+      });
+        assert.equal(calls.length, 2);
+        assert.equal(calls[0]?.[0], "https://01.works");
+        assert.equal(calls[1]?.[0], "https://01.software");
     `;
 
     execFileSync("node", ["--input-type=module", "--eval", smokeScript], {
