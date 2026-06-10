@@ -1,0 +1,41 @@
+{
+  "name": "@01.works/branding",
+  "version": "0.1.0",
+  "description": "Shared branding utilities for 01.works",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm test && npm run typecheck"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/01-office/branding.git"
+  },
+  "bugs": {
+    "url": "https://github.com/01-office/branding/issues"
+  },
+  "homepage": "https://github.com/01-office/branding#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
