@@ -44,6 +44,48 @@ type BrandingOptions = {
 };
 ```
 
+## React
+
+A React entry point is available at `@01.works/branding/react` for apps that
+prefer to drop branding in declaratively. React is an optional peer dependency —
+the core entry above has no React dependency.
+
+```tsx
+// app/layout.tsx (Next.js App Router)
+import { Branding } from "@01.works/branding/react";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        {children}
+        <Branding />
+      </body>
+    </html>
+  );
+}
+```
+
+`Branding` is a renderless component (it returns `null`) that shows the branding
+once, after mount. It ships a `"use client"` directive, so it works inside
+Server Components without extra wrapping. SSR-safe: nothing is logged during
+server rendering.
+
+Prefer a hook? `useBranding()` does the same thing from inside your own client
+component:
+
+```tsx
+"use client";
+import { useBranding } from "@01.works/branding/react";
+
+export function Providers({ children }) {
+  useBranding();
+  return children;
+}
+```
+
+Both accept the same `BrandingOptions` as `showBranding()`.
+
 ## Development
 
 ```sh

@@ -10,6 +10,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "default": "./dist/react.js"
     }
   },
   "files": [
@@ -22,6 +27,7 @@
     "build": "npm run clean && tsc",
     "test": "npm run build && node --test",
     "typecheck": "tsc --noEmit",
+    "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run typecheck"
   },
   "repository": {
@@ -36,7 +42,18 @@
     "access": "public"
   },
   "license": "MIT",
+  "peerDependencies": {
+    "react": ">=17.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@types/react": "^19.2.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "typescript": "^5.9.3"
   }
 }
