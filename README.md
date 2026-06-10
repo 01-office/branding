@@ -16,8 +16,9 @@ import { showBranding } from "@01.works/branding";
 showBranding();
 ```
 
-The package scaffold is ready for publishing, but the `showBranding`
-implementation comes next and is not included yet.
+This repository is only a package scaffold. It is not publishable yet because
+the exported `showBranding` implementation does not exist. Implementation and
+tests come next.
 
 ## Development
 
