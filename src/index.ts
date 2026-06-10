@@ -1,9 +1,11 @@
 export type BrandingOptions = {
-  console?: Pick<Console, "info">;
+  console?: Pick<Console, "group" | "groupEnd" | "info">;
 };
 
-const MESSAGE = "%c01.works%c https://01.works";
-const BRAND_STYLE = "background: #000; color: #9fff6b;";
+const WEBSITE_GROUP_LABEL = "Website by";
+const WEBSITE_LINK = "https://01.works";
+const POWERED_GROUP_LABEL = "Powered by";
+const POWERED_LINK = "https://01.software";
 
 let hasShownBranding = false;
 
@@ -14,5 +16,12 @@ export function showBranding(options: BrandingOptions = {}): void {
 
   hasShownBranding = true;
   const consoleTarget = options.console ?? globalThis.console;
-  consoleTarget.info(MESSAGE, BRAND_STYLE, "");
+
+  consoleTarget.group(WEBSITE_GROUP_LABEL);
+  consoleTarget.info(WEBSITE_LINK);
+  consoleTarget.groupEnd();
+
+  consoleTarget.group(POWERED_GROUP_LABEL);
+  consoleTarget.info(POWERED_LINK);
+  consoleTarget.groupEnd();
 }
