@@ -1,6 +1,6 @@
 # @01.works/branding
 
-Shared branding utilities for 01.works.
+Usable shared branding utilities for 01.works.
 
 ## Installation
 
@@ -16,9 +16,30 @@ import { showBranding } from "@01.works/branding";
 showBranding();
 ```
 
-This repository is only a package scaffold. It is not publishable yet because
-the exported `showBranding` implementation does not exist. Implementation and
-tests come next.
+The package does not run automatically. Call `showBranding()` explicitly where
+you want the styled developer-console message to appear. Repeated calls from
+the same module instance produce only one message.
+
+`showBranding()` is SSR-safe: it does not access `window` and has no import-time
+side effects.
+
+## API
+
+### `showBranding(options?: BrandingOptions): void`
+
+Logs the 01.works branding message with `console.info`.
+
+Pass a console-compatible target when the message should use a specific logger:
+
+```ts
+showBranding({ console: customConsole });
+```
+
+```ts
+type BrandingOptions = {
+  console?: Pick<Console, "info">;
+};
+```
 
 ## Development
 
