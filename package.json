@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Shared branding utilities for 01.works",
   "type": "module",
+  "packageManager": "pnpm@10.33.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -24,12 +25,12 @@
   ],
   "scripts": {
     "clean": "node --input-type=module -e \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true });\"",
-    "build": "npm run clean && tsc",
-    "test": "npm run build && node --test --test-concurrency=1",
-    "dev:playground": "npm run dev --prefix playground",
+    "build": "pnpm run clean && tsc",
+    "test": "pnpm run build && node --test --test-concurrency=1",
+    "dev:playground": "pnpm -C playground run dev",
     "typecheck": "tsc --noEmit",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run typecheck"
+    "prepare": "pnpm run build",
+    "prepublishOnly": "pnpm test && pnpm run typecheck"
   },
   "repository": {
     "type": "git",

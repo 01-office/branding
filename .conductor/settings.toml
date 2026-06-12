@@ -1,14 +1,16 @@
 #:schema https://conductor.build/schemas/settings.repo.schema.json
 
 [scripts]
-# Install root library deps (the `prepare` script builds dist via tsc) and the
-# Vite playground deps. Both packages ship a package-lock.json.
-setup = "pnpm install && pnpm install --prefix playground"
+# Install root library deps (the `prepare` script then builds dist via tsc) and
+# the Vite playground deps. Both packages ship a pnpm-lock.yaml. pnpm uses
+# `-C <dir>` to operate inside the playground package.
+setup = "pnpm install && pnpm install -C playground"
 
 # Launch the Vite playground dev server on the workspace's assigned port so
-# multiple workspaces can run side by side without colliding.
-run = "pnpm run dev --prefix playground -- --port $CONDUCTOR_PORT --strictPort"
+# multiple workspaces can run side by side without colliding. pnpm forwards
+# trailing args to the script directly (no `--` separator, unlike npm).
+run = "pnpm -C playground run dev --port $CONDUCTOR_PORT --strictPort"
 
-# Each workspace serves on its own CONDUCTOR_PORT with no shared local state,
-# so workspaces can run at the same time.
+# Each workspace serves on its own CONDUCTOR_PORT with its own node_modules and
+# no shared local state, so workspaces can run at the same time.
 run_mode = "concurrent"
