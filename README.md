@@ -5,11 +5,11 @@ Usable shared branding utilities for 01.works.
 ## Installation
 
 ```sh
-npm install github:01-office/branding
+pnpm add github:01-office/branding
 ```
 
 After the package is published to npm, install it with
-`npm install @01.works/branding`.
+`pnpm add @01.works/branding`.
 
 ## Usage
 
@@ -89,7 +89,7 @@ Both accept the same `BrandingOptions` as `showBranding()`.
 ## Development
 
 ```sh
-npm test
-npm run typecheck
-npm pack --dry-run
+pnpm test
+pnpm run typecheck
+pnpm pack --dry-run
 ```
