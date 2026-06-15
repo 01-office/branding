@@ -12,7 +12,7 @@ async function importFreshBranding() {
   return import(url);
 }
 
-test("default branding prints one combined info log per brand, once, with no console groups", async () => {
+test("default branding prints only 01.works once, with no console groups", async () => {
   const { showBranding } = await importFreshBranding();
   const groupCalls = [];
   const infoCalls = [];
@@ -31,20 +31,16 @@ test("default branding prints one combined info log per brand, once, with no con
 
     assert.equal(groupCalls.length, 0);
     assert.equal(groupEndCalls.length, 0);
-    assert.equal(infoCalls.length, 2);
+    assert.equal(infoCalls.length, 1);
 
-    // Each log: "%c<header>\n<art>" + a monospace style (no color).
+    // Log: "%c<header>\n<art>" + a monospace style (no color).
     assert.equal(infoCalls[0]?.[1], "font-family: monospace");
-    assert.equal(infoCalls[1]?.[1], "font-family: monospace");
 
     // Caption is the first line; the URL is the last line (right-aligned).
     const worksLines = infoCalls[0]?.[0].slice(2).split("\n");
     assert.equal(worksLines[0], "Website by");
     assert.ok(worksLines[worksLines.length - 1].endsWith(WEBSITE_LINK));
-
-    const poweredLines = infoCalls[1]?.[0].slice(2).split("\n");
-    assert.equal(poweredLines[0], "Powered by");
-    assert.ok(poweredLines[poweredLines.length - 1].endsWith(POWERED_LINK));
+    assert.ok(!infoCalls[0]?.[0].includes(POWERED_LINK));
   } finally {
     globalThis.console.group = originalGroup;
     globalThis.console.info = originalInfo;
@@ -78,8 +74,8 @@ test("uses the supplied console target", async () => {
   }
 
   assert.equal(globalCalls.length, 0);
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 1);
   assert.ok(calls.every((call) => call[0] === "info"));
   assert.ok(calls[0][1].includes(WEBSITE_LINK));
-  assert.ok(calls[1][1].includes(POWERED_LINK));
+  assert.ok(!calls[0][1].includes(POWERED_LINK));
 });

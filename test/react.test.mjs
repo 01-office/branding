@@ -56,6 +56,28 @@ test("resolveBrandingShow without groups returns the shared showBranding singlet
   assert.equal(resolveBrandingShow(), showBranding);
 });
 
+test("resolveBrandingShow with includeSoftware returns a banner printer that includes 01.software", async () => {
+  const { resolveBrandingShow } = await import(moduleUrl);
+  const show = resolveBrandingShow(undefined, true);
+
+  // It must be a fresh instance, not the default singleton.
+  assert.notEqual(show, showBranding);
+
+  const calls = [];
+  show({
+    console: {
+      group: (...a) => calls.push(["group", ...a]),
+      info: (...a) => calls.push(["info", ...a]),
+      groupEnd: (...a) => calls.push(["groupEnd", ...a]),
+    },
+  });
+
+  assert.equal(calls.length, 2);
+  assert.ok(calls.every((call) => call[0] === "info"));
+  assert.ok(calls.some((call) => call[1].includes("https://01.works")));
+  assert.ok(calls.some((call) => call[1].includes("https://01.software")));
+});
+
 test("resolveBrandingShow with groups returns a printer that emits the configured groups", async () => {
   const { resolveBrandingShow } = await import(moduleUrl);
   const show = resolveBrandingShow([{ label: "Made by", link: "https://acme.test" }]);

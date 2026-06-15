@@ -5,11 +5,14 @@ Usable shared branding utilities for 01.works.
 ## Installation
 
 ```sh
-pnpm add github:01-office/console
+pnpm add @01.works/console
 ```
 
-After the package is published to npm, install it with
-`pnpm add @01.works/console`.
+For a GitHub install before or outside npm publishing:
+
+```sh
+pnpm add github:01-office/console
+```
 
 ## Usage
 
@@ -30,11 +33,10 @@ side effects.
 
 ### `showBranding(options?: BrandingOptions): void`
 
-Logs the 01.works branding with `console.info`: one log per brand — the caption,
-an ASCII-art wordmark for `01.works` / `01.software`, then the URL right-aligned
-on the line below the art. Rendered in monospace (via `%c`, no color) so the
-right-aligned URL stays flush; the bare URL is auto-linked by the browser
-console. No console groups are used.
+Logs the 01.works branding with `console.info`: the caption, an ASCII-art
+wordmark for `01.works`, then the URL right-aligned on the line below the art.
+Rendered in monospace (via `%c`, no color) so the right-aligned URL stays flush;
+the bare URL is auto-linked by the browser console. No console groups are used.
 
 Pass a console-compatible target when the message should use a specific logger:
 
@@ -44,7 +46,26 @@ showBranding({ console: customConsole });
 
 ```ts
 type BrandingOptions = {
-  console?: Pick<Console, "group" | "groupEnd" | "info">;
+  console?: BrandingConsole;
+};
+
+type BrandingConsole = Pick<Console, "group" | "groupEnd" | "info">;
+type BrandingPrinter = (options?: BrandingOptions) => void;
+```
+
+To include the 01.software banner from the core API, create an opt-in banner
+printer:
+
+```ts
+import { createBrandingBanner } from "@01.works/console";
+
+const show = createBrandingBanner({ includeSoftware: true });
+show({ console: customConsole });
+```
+
+```ts
+type BrandingBannerConfig = {
+  includeSoftware?: boolean;
 };
 ```
 
@@ -88,11 +109,23 @@ import { createBranding } from "@01.works/console";
 const show = createBranding({
   groups: [{ label: "Website by", link: "https://acme.com" }],
 });
-show();
+show({ console: customConsole });
 ```
 
 `createBranding(config)` returns a once-guarded, SSR-safe `show()` function.
-`showBranding()` is the default 01.works instance.
+`showBranding()` is the default 01.works instance. Custom `groups` fully replace
+the default preset.
+
+```ts
+type BrandingGroup = {
+  label: string;
+  link: string;
+};
+
+type BrandingConfig = {
+  groups: BrandingGroup[];
+};
+```
 
 ## React
 
@@ -128,10 +161,31 @@ console target can still be injected with `console`):
 <Branding groups={[{ label: "Website by", link: "https://acme.com" }]} />
 ```
 
+Pass `includeSoftware` to include the 01.software banner alongside the default
+01.works banner:
+
+```tsx
+<Branding includeSoftware />
+```
+
+All React variants accept a console-compatible target:
+
+```tsx
+<Branding includeSoftware console={customConsole} />
+```
+
 Both `Branding` and `useBranding` accept `BrandingProps` — the branding
-`groups` plus an optional `console` target. With no `groups`, the default
-01.works branding is shown once for the whole app; with `groups`, each mounted
-component shows its configured branding once.
+`groups`, optional `includeSoftware`, plus an optional `console` target. With no
+`groups`, the default 01.works branding is shown once for the whole app; with
+`includeSoftware`, 01.software is also shown. With `groups`, each mounted
+component shows its configured branding once and `includeSoftware` is ignored.
+
+```ts
+type BrandingProps = BrandingOptions & {
+  groups?: BrandingGroup[];
+  includeSoftware?: boolean;
+};
+```
 
 Prefer a hook? `useBranding()` does the same thing from inside your own client
 component:
@@ -146,8 +200,8 @@ export function Providers({ children }) {
 }
 ```
 
-Both accept the same `BrandingProps` (branding `groups` plus an optional
-`console` target).
+Both accept the same `BrandingProps` (branding `groups`, optional
+`includeSoftware`, plus an optional `console` target).
 
 ## Development
 
