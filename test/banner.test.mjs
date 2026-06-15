@@ -13,13 +13,13 @@ function fakeConsole() {
   };
 }
 
-test("banner prints one info log per brand: caption, ASCII art, then right-aligned url below; monospace and no color, no groups", () => {
+test("banner prints only the 01.works brand by default: caption, ASCII art, then right-aligned url below; monospace and no color, no groups", () => {
   const show = createBrandingBanner();
   const c = fakeConsole();
   show({ console: c });
 
-  // One info call per brand — two total, nothing else.
-  assert.equal(c.calls.length, 2);
+  // One info call for the default brand, nothing else.
+  assert.equal(c.calls.length, 1);
   assert.ok(c.calls.every((call) => call[0] === "info"));
 
   for (const call of c.calls) {
@@ -37,6 +37,16 @@ test("banner prints one info log per brand: caption, ASCII art, then right-align
   assert.equal(worksLines[0], "Website by");
   assert.match(worksLines[worksLines.length - 1], /^ {2,}https:\/\/01\.works$/);
   assert.ok(works.includes("\\___/")); // a recognizable slice of the figlet art
+  assert.ok(!works.includes("01.software"));
+});
+
+test("banner can include the 01.software brand when explicitly configured", () => {
+  const show = createBrandingBanner({ includeSoftware: true });
+  const c = fakeConsole();
+  show({ console: c });
+
+  assert.equal(c.calls.length, 2);
+  assert.ok(c.calls.every((call) => call[0] === "info"));
 
   // 01.software: same structure.
   const software = c.calls[1]?.[1].slice(2);
@@ -54,5 +64,5 @@ test("banner shows at most once per instance", () => {
   const c = fakeConsole();
   show({ console: c });
   show({ console: c });
-  assert.equal(c.calls.length, 2);
+  assert.equal(c.calls.length, 1);
 });

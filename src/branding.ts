@@ -1,23 +1,34 @@
+/** Options accepted by every branding printer invocation. */
 export type BrandingOptions = {
-  console?: Pick<Console, "group" | "groupEnd" | "info">;
+  /**
+   * Console-compatible target. Banner printers use `info`; group branding uses
+   * all three methods.
+   */
+  console?: BrandingConsole;
 };
+
+/** Console surface accepted by branding printers. */
+export type BrandingConsole = Pick<Console, "group" | "groupEnd" | "info">;
+
+/** A once-guarded function that prints branding to the chosen console target. */
+export type BrandingPrinter = (options?: BrandingOptions) => void;
 
 /** A single labeled link group shown in the console. */
 export type BrandingGroup = {
+  /** Caption shown before the link, for example "Website by". */
   label: string;
+  /** Link printed in the console. */
   link: string;
 };
 
 /** Configuration describing which groups a branding instance prints. */
 export type BrandingConfig = {
+  /** Groups to print. These fully replace the default preset. */
   groups: BrandingGroup[];
 };
 
 const DEFAULT_CONFIG: BrandingConfig = {
-  groups: [
-    { label: "Website by", link: "https://01.works" },
-    { label: "Powered by", link: "https://01.software" },
-  ],
+  groups: [{ label: "Website by", link: "https://01.works" }],
 };
 
 /**
@@ -27,7 +38,7 @@ const DEFAULT_CONFIG: BrandingConfig = {
  */
 export function createBranding(
   config: BrandingConfig = DEFAULT_CONFIG,
-): (options?: BrandingOptions) => void {
+): BrandingPrinter {
   let hasShown = false;
   return function show(options: BrandingOptions = {}): void {
     if (hasShown) {
@@ -63,10 +74,22 @@ type BrandBanner = {
   link: string;
 };
 
-const DEFAULT_BANNERS: BrandBanner[] = [
-  { caption: "Website by", art: WORKS_ART, link: "https://01.works" },
-  { caption: "Powered by", art: SOFTWARE_ART, link: "https://01.software" },
-];
+export type BrandingBannerConfig = {
+  /** Also print the 01.software banner after the default 01.works banner. */
+  includeSoftware?: boolean;
+};
+
+const WORKS_BANNER: BrandBanner = {
+  caption: "Website by",
+  art: WORKS_ART,
+  link: "https://01.works",
+};
+
+const SOFTWARE_BANNER: BrandBanner = {
+  caption: "Powered by",
+  art: SOFTWARE_ART,
+  link: "https://01.software",
+};
 
 /**
  * Build the combined log for one brand: the caption on its own line, then the
@@ -83,24 +106,28 @@ function formatBanner(banner: BrandBanner): string {
 }
 
 /**
- * Create the default 01.works branding printer. For each brand it prints a
- * single `console.info` log: the caption, the ASCII-art wordmark (figlet
- * "Standard"), and then the URL right-aligned beneath the art. Uses a monospace
- * `%c` style (no color) so the right-aligned URL stays flush, and no console
- * groups. Shows at most once per instance and is SSR-safe (no `window` access,
- * no import-time side effects).
+ * Create the default 01.works branding printer. It prints one `console.info`
+ * log: the caption, the ASCII-art wordmark (figlet "Standard"), and then the
+ * URL right-aligned beneath the art. Pass `{ includeSoftware: true }` to also
+ * print the 01.software banner. Uses a monospace `%c` style (no color) so the
+ * right-aligned URL stays flush, and no console groups. Shows at most once per
+ * instance and is SSR-safe (no `window` access, no import-time side effects).
  */
-export function createBrandingBanner(): (options?: BrandingOptions) => void {
+export function createBrandingBanner(
+  config: BrandingBannerConfig = {},
+): BrandingPrinter {
   let hasShown = false;
+  const banners = config.includeSoftware
+    ? [WORKS_BANNER, SOFTWARE_BANNER]
+    : [WORKS_BANNER];
   return function show(options: BrandingOptions = {}): void {
     if (hasShown) {
       return;
     }
     hasShown = true;
     const consoleTarget = options.console ?? globalThis.console;
-    for (const banner of DEFAULT_BANNERS) {
+    for (const banner of banners) {
       consoleTarget.info(`%c${formatBanner(banner)}`, MONO_STYLE);
     }
   };
 }
-

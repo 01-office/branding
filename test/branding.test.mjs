@@ -3,6 +3,24 @@ import { test } from "node:test";
 
 import { createBranding } from "../dist/branding.js";
 
+test("createBranding defaults to only the 01.works group", () => {
+  const calls = [];
+  const show = createBranding();
+  const target = {
+    group: (...a) => calls.push(["group", ...a]),
+    info: (...a) => calls.push(["info", ...a]),
+    groupEnd: (...a) => calls.push(["groupEnd", ...a]),
+  };
+
+  show({ console: target });
+
+  assert.deepEqual(calls, [
+    ["group", "Website by"],
+    ["info", "https://01.works"],
+    ["groupEnd"],
+  ]);
+});
+
 test("createBranding emits the configured groups to the injected console", () => {
   const calls = [];
   const show = createBranding({
