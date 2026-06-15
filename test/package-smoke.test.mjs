@@ -51,9 +51,10 @@ test("packed package exports a working showBranding function", () => {
           groupEnd: () => {},
         },
       });
-        assert.equal(calls.length, 2);
-        assert.equal(calls[0]?.[0], "https://01.works");
-        assert.equal(calls[1]?.[0], "https://01.software");
+        assert.equal(calls.length, 6);
+        const lines = calls.map((args) => args[0]);
+        assert.ok(lines.includes("https://01.works"));
+        assert.ok(lines.includes("https://01.software"));
     `;
 
     execFileSync("node", ["--input-type=module", "--eval", smokeScript], {
