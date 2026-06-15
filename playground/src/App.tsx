@@ -1,9 +1,9 @@
-import { Branding } from "@01.works/branding/react";
+import { Branding } from "@01.works/console/react";
 
 function App() {
   return (
     <main>
-      <h1>@01.works/branding playground</h1>
+      <h1>@01.works/console playground</h1>
 
       <h2>개발자 도구 여는 방법</h2>
       <ul>

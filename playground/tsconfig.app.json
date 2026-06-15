@@ -17,8 +17,8 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
-      "@01.works/branding/react": ["../src/react.tsx"],
-      "@01.works/branding": ["../src/index.ts"]
+      "@01.works/console/react": ["../src/react.tsx"],
+      "@01.works/console": ["../src/index.ts"]
     },
 
     /* Linting */

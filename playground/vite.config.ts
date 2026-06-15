@@ -11,8 +11,8 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@01.works/branding/react": path.resolve(rootDir, "../src/react.tsx"),
-      "@01.works/branding": path.resolve(rootDir, "../src/index.ts"),
+      "@01.works/console/react": path.resolve(rootDir, "../src/react.tsx"),
+      "@01.works/console": path.resolve(rootDir, "../src/index.ts"),
     },
   },
 });
