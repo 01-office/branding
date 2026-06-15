@@ -15,21 +15,31 @@ test("exports Branding and useBranding functions", async () => {
   assert.equal(typeof mod.useBranding, "function");
 });
 
-test("Branding renders nothing and is SSR-safe", async () => {
+test("Branding renders nothing and is SSR-safe, including with custom groups", async () => {
   const { Branding } = await import(moduleUrl);
   const calls = [];
   const originalInfo = globalThis.console.info;
+  const originalGroup = globalThis.console.group;
 
   globalThis.console.info = (...args) => calls.push(args);
+  globalThis.console.group = (...args) => calls.push(args);
 
   let markup;
+  let markupWithGroups;
   try {
     markup = renderToStaticMarkup(React.createElement(Branding));
+    markupWithGroups = renderToStaticMarkup(
+      React.createElement(Branding, {
+        groups: [{ label: "Made by", link: "https://acme.test" }],
+      }),
+    );
   } finally {
     globalThis.console.info = originalInfo;
+    globalThis.console.group = originalGroup;
   }
 
   assert.equal(markup, "");
+  assert.equal(markupWithGroups, "");
   // The effect only runs on the client, so server rendering logs nothing.
   assert.equal(calls.length, 0);
 });

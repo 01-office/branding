@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import {
   createBranding,
@@ -30,26 +30,34 @@ export function resolveBrandingShow(
 }
 
 /**
- * React hook that shows the 01.works developer-console branding once, after the
- * component mounts.
+ * React hook that shows developer-console branding once, after the component
+ * mounts. With no `groups`, it shows the default 01.works branding via the
+ * shared singleton (once app-wide). With `groups`, it builds a per-component
+ * branding instance — held in a ref so it survives React StrictMode's dev
+ * double-invoke — and shows it once per mount.
  *
  * SSR-safe: the effect only runs on the client, so server rendering produces no
- * branding side effect. Branding is shown at most once per module instance, so
- * the options captured on first mount are the only ones ever used.
+ * branding side effect. The config is captured once on mount; later prop
+ * changes are intentionally ignored (branding is a one-shot side effect).
  */
-export function useBranding(options: BrandingOptions = {}): void {
+export function useBranding(props: BrandingProps = {}): void {
+  const { console: consoleTarget, groups } = props;
+  const showRef = useRef<((options?: BrandingOptions) => void) | null>(null);
+  if (showRef.current === null) {
+    showRef.current = resolveBrandingShow(groups);
+  }
   useEffect(() => {
-    showBranding(options);
+    showRef.current?.(consoleTarget ? { console: consoleTarget } : {});
     // Intentionally run once on mount — see the note above about idempotency.
   }, []);
 }
 
 /**
- * Renderless React component that shows the 01.works developer-console branding
- * once. Drop it anywhere in the tree (typically the root layout) and it renders
- * nothing.
+ * Renderless React component that shows developer-console branding once. Drop it
+ * anywhere in the tree (typically the root layout) and it renders nothing.
+ * Accepts the same props as {@link useBranding}.
  */
-export function Branding(options: BrandingOptions = {}): null {
-  useBranding(options);
+export function Branding(props: BrandingProps = {}): null {
+  useBranding(props);
   return null;
 }
