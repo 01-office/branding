@@ -30,7 +30,9 @@ side effects.
 
 ### `showBranding(options?: BrandingOptions): void`
 
-Logs the 01.works branding message with `console.info`.
+Logs the 01.works branding with `console.info`: emphasized ASCII-art banners for
+`01.works` (blue) and `01.software` (violet), styled with the console's `%c`
+formatting, each with a dim caption and its URL. No console groups are used.
 
 Pass a console-compatible target when the message should use a specific logger:
 
