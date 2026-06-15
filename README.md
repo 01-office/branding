@@ -117,6 +117,18 @@ once, after mount. It ships a `"use client"` directive, so it works inside
 Server Components without extra wrapping. SSR-safe: nothing is logged during
 server rendering.
 
+Pass `groups` to show custom branding instead of the 01.works default (any
+console target can still be injected with `console`):
+
+```tsx
+<Branding groups={[{ label: "Website by", link: "https://acme.com" }]} />
+```
+
+Both `Branding` and `useBranding` accept `BrandingProps` — the branding
+`groups` plus an optional `console` target. With no `groups`, the default
+01.works branding is shown once for the whole app; with `groups`, each mounted
+component shows its configured branding once.
+
 Prefer a hook? `useBranding()` does the same thing from inside your own client
 component:
 
