@@ -142,7 +142,8 @@ export function Providers({ children }) {
 }
 ```
 
-Both accept the same `BrandingOptions` as `showBranding()`.
+Both accept the same `BrandingProps` (branding `groups` plus an optional
+`console` target).
 
 ## Development
 
