@@ -84,7 +84,10 @@ tree-shaking.
   - `opts.levels?: Partial<Record<Level, ConsoleStyle>>` to override styles.
 
 - **branding.ts** — `createBranding(config)` returns a `show()` function that is
-  once-guarded and SSR-safe. `showBranding` is `createBranding(DEFAULT_01WORKS)`.
+  once-guarded and SSR-safe. `showBranding` is `createBranding(DEFAULT_01WORKS)`;
+  it is defined in `index.ts` (not `branding.ts`) so that the per-test
+  cache-busting in `test/index.test.mjs` — which only re-imports `index.js` —
+  gets a fresh once-guard closure each time.
   - `config` describes the groups to print (label + link), defaulting to the
     current two groups: `Website by → https://01.works`,
     `Powered by → https://01.software`.
