@@ -32,10 +32,9 @@ side effects.
 
 Logs the 01.works branding with `console.info`: one log per brand — the caption,
 an ASCII-art wordmark for `01.works` / `01.software`, then the URL right-aligned
-on the line below the art and rendered as an inverted chip (a filled background
-with contrasting text). The banner uses a monospace `%c` style so the
-right-aligned URL stays flush; the URL is auto-linked by the browser console. No
-console groups are used.
+on the line below the art. Rendered in monospace (via `%c`, no color) so the
+right-aligned URL stays flush; the bare URL is auto-linked by the browser
+console. No console groups are used.
 
 Pass a console-compatible target when the message should use a specific logger:
 
