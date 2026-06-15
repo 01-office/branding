@@ -1,7 +1,7 @@
 {
-  "name": "@01.works/branding",
+  "name": "@01.works/console",
   "version": "0.1.0",
-  "description": "Shared branding utilities for 01.works",
+  "description": "Shared console utilities for 01.works",
   "type": "module",
   "packageManager": "pnpm@10.33.0",
   "main": "./dist/index.js",
@@ -16,6 +16,11 @@
       "types": "./dist/react.d.ts",
       "import": "./dist/react.js",
       "default": "./dist/react.js"
+    },
+    "./logger": {
+      "types": "./dist/logger.d.ts",
+      "import": "./dist/logger.js",
+      "default": "./dist/logger.js"
     }
   },
   "files": [
@@ -34,12 +39,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/01-office/branding.git"
+    "url": "git+https://github.com/01-office/console.git"
   },
   "bugs": {
-    "url": "https://github.com/01-office/branding/issues"
+    "url": "https://github.com/01-office/console/issues"
   },
-  "homepage": "https://github.com/01-office/branding#readme",
+  "homepage": "https://github.com/01-office/console#readme",
   "publishConfig": {
     "access": "public"
   },

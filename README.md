@@ -1,20 +1,20 @@
-# @01.works/branding
+# @01.works/console
 
 Usable shared branding utilities for 01.works.
 
 ## Installation
 
 ```sh
-pnpm add github:01-office/branding
+pnpm add github:01-office/console
 ```
 
 After the package is published to npm, install it with
-`pnpm add @01.works/branding`.
+`pnpm add @01.works/console`.
 
 ## Usage
 
 ```ts
-import { showBranding } from "@01.works/branding";
+import { showBranding } from "@01.works/console";
 
 showBranding();
 ```
@@ -30,7 +30,11 @@ side effects.
 
 ### `showBranding(options?: BrandingOptions): void`
 
-Logs the 01.works branding message with `console.info`.
+Logs the 01.works branding with `console.info`: one log per brand — the caption,
+an ASCII-art wordmark for `01.works` / `01.software`, then the URL right-aligned
+on the line below the art. Rendered in monospace (via `%c`, no color) so the
+right-aligned URL stays flush; the bare URL is auto-linked by the browser
+console. No console groups are used.
 
 Pass a console-compatible target when the message should use a specific logger:
 
@@ -40,19 +44,65 @@ showBranding({ console: customConsole });
 
 ```ts
 type BrandingOptions = {
-  console?: Pick<Console, "info">;
+  console?: Pick<Console, "group" | "groupEnd" | "info">;
 };
 ```
 
+## Console styling
+
+The package is a lightweight wrapper for styled browser-console output. The
+01.works branding above is the default preset built on these primitives.
+
+```ts
+import { badge, log, segment } from "@01.works/console";
+
+log(badge("API", { background: "#0af", color: "#fff" }), " request sent");
+log(segment("hello", "color: hotpink; font-weight: 600"));
+```
+
+- `segment(text, style?)` — styled text. `style` is a CSS object (camelCase
+  keys) or a raw CSS string.
+- `badge(label, style?)` — a styled label with default padding/rounding.
+- `log(...parts)` — emit styled parts (and plain strings) to the global console.
+
+### Level logger
+
+```ts
+import { createLogger } from "@01.works/console/logger";
+
+const logger = createLogger();
+logger.info("loaded");
+logger.success("saved");
+logger.error("failed", err); // extra args keep interactive inspection
+```
+
+`createLogger(options?)` accepts `{ console, levels }` to inject a console
+target and override per-level styles. Levels: `info`, `warn`, `error`,
+`success`, `debug`.
+
+### Custom branding
+
+```ts
+import { createBranding } from "@01.works/console";
+
+const show = createBranding({
+  groups: [{ label: "Website by", link: "https://acme.com" }],
+});
+show();
+```
+
+`createBranding(config)` returns a once-guarded, SSR-safe `show()` function.
+`showBranding()` is the default 01.works instance.
+
 ## React
 
-A React entry point is available at `@01.works/branding/react` for apps that
+A React entry point is available at `@01.works/console/react` for apps that
 prefer to drop branding in declaratively. React is an optional peer dependency —
 the core entry above has no React dependency.
 
 ```tsx
 // app/layout.tsx (Next.js App Router)
-import { Branding } from "@01.works/branding/react";
+import { Branding } from "@01.works/console/react";
 
 export default function RootLayout({ children }) {
   return (
@@ -71,12 +121,24 @@ once, after mount. It ships a `"use client"` directive, so it works inside
 Server Components without extra wrapping. SSR-safe: nothing is logged during
 server rendering.
 
+Pass `groups` to show custom branding instead of the 01.works default (any
+console target can still be injected with `console`):
+
+```tsx
+<Branding groups={[{ label: "Website by", link: "https://acme.com" }]} />
+```
+
+Both `Branding` and `useBranding` accept `BrandingProps` — the branding
+`groups` plus an optional `console` target. With no `groups`, the default
+01.works branding is shown once for the whole app; with `groups`, each mounted
+component shows its configured branding once.
+
 Prefer a hook? `useBranding()` does the same thing from inside your own client
 component:
 
 ```tsx
 "use client";
-import { useBranding } from "@01.works/branding/react";
+import { useBranding } from "@01.works/console/react";
 
 export function Providers({ children }) {
   useBranding();
@@ -84,7 +146,8 @@ export function Providers({ children }) {
 }
 ```
 
-Both accept the same `BrandingOptions` as `showBranding()`.
+Both accept the same `BrandingProps` (branding `groups` plus an optional
+`console` target).
 
 ## Development
 

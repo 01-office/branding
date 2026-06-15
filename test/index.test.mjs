@@ -12,7 +12,7 @@ async function importFreshBranding() {
   return import(url);
 }
 
-test("logs two open groups once after two invocations", async () => {
+test("default branding prints one combined info log per brand, once, with no console groups", async () => {
   const { showBranding } = await importFreshBranding();
   const groupCalls = [];
   const infoCalls = [];
@@ -29,13 +29,22 @@ test("logs two open groups once after two invocations", async () => {
     showBranding();
     showBranding();
 
-    assert.equal(groupCalls.length, 2);
-    assert.equal(groupCalls[0]?.[0], "Website by");
-    assert.equal(groupCalls[1]?.[0], "Powered by");
+    assert.equal(groupCalls.length, 0);
+    assert.equal(groupEndCalls.length, 0);
     assert.equal(infoCalls.length, 2);
-    assert.equal(infoCalls[0]?.[0], WEBSITE_LINK);
-    assert.equal(infoCalls[1]?.[0], POWERED_LINK);
-    assert.equal(groupEndCalls.length, 2);
+
+    // Each log: "%c<header>\n<art>" + a monospace style (no color).
+    assert.equal(infoCalls[0]?.[1], "font-family: monospace");
+    assert.equal(infoCalls[1]?.[1], "font-family: monospace");
+
+    // Caption is the first line; the URL is the last line (right-aligned).
+    const worksLines = infoCalls[0]?.[0].slice(2).split("\n");
+    assert.equal(worksLines[0], "Website by");
+    assert.ok(worksLines[worksLines.length - 1].endsWith(WEBSITE_LINK));
+
+    const poweredLines = infoCalls[1]?.[0].slice(2).split("\n");
+    assert.equal(poweredLines[0], "Powered by");
+    assert.ok(poweredLines[poweredLines.length - 1].endsWith(POWERED_LINK));
   } finally {
     globalThis.console.group = originalGroup;
     globalThis.console.info = originalInfo;
@@ -69,11 +78,8 @@ test("uses the supplied console target", async () => {
   }
 
   assert.equal(globalCalls.length, 0);
-  assert.equal(calls.length, 6);
-  assert.deepEqual(calls[0], ["group", "Website by"]);
-  assert.deepEqual(calls[1], ["info", WEBSITE_LINK]);
-  assert.deepEqual(calls[2], ["groupEnd"]);
-  assert.deepEqual(calls[3], ["group", "Powered by"]);
-  assert.deepEqual(calls[4], ["info", POWERED_LINK]);
-  assert.deepEqual(calls[5], ["groupEnd"]);
+  assert.equal(calls.length, 2);
+  assert.ok(calls.every((call) => call[0] === "info"));
+  assert.ok(calls[0][1].includes(WEBSITE_LINK));
+  assert.ok(calls[1][1].includes(POWERED_LINK));
 });
