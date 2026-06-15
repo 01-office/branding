@@ -4,6 +4,8 @@ import { test } from "node:test";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { showBranding } from "../dist/index.js";
+
 const moduleUrl = new URL("../dist/react.js", import.meta.url);
 
 test("exports Branding and useBranding functions", async () => {
@@ -37,4 +39,32 @@ test("ships a 'use client' directive for the React entry", async () => {
   const source = await readFile(moduleUrl, "utf8");
 
   assert.match(source, /^["']use client["'];/);
+});
+
+test("resolveBrandingShow without groups returns the shared showBranding singleton", async () => {
+  const { resolveBrandingShow } = await import(moduleUrl);
+  assert.equal(resolveBrandingShow(), showBranding);
+});
+
+test("resolveBrandingShow with groups returns a printer that emits the configured groups", async () => {
+  const { resolveBrandingShow } = await import(moduleUrl);
+  const show = resolveBrandingShow([{ label: "Made by", link: "https://acme.test" }]);
+
+  // It must be a fresh instance, not the default singleton.
+  assert.notEqual(show, showBranding);
+
+  const calls = [];
+  show({
+    console: {
+      group: (...a) => calls.push(["group", ...a]),
+      info: (...a) => calls.push(["info", ...a]),
+      groupEnd: (...a) => calls.push(["groupEnd", ...a]),
+    },
+  });
+
+  assert.deepEqual(calls, [
+    ["group", "Made by"],
+    ["info", "https://acme.test"],
+    ["groupEnd"],
+  ]);
 });

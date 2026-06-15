@@ -2,7 +2,32 @@
 
 import { useEffect } from "react";
 
-import { showBranding, type BrandingOptions } from "./index.js";
+import {
+  createBranding,
+  showBranding,
+  type BrandingConfig,
+  type BrandingGroup,
+  type BrandingOptions,
+} from "./index.js";
+
+/**
+ * Props for {@link Branding} and {@link useBranding}. A superset of
+ * {@link BrandingOptions} that also accepts the branding `groups` from
+ * {@link BrandingConfig}, so custom branding can be configured via props.
+ */
+export type BrandingProps = Partial<BrandingConfig> & BrandingOptions;
+
+/**
+ * Pick the branding printer for the given props. Returns the shared
+ * `showBranding` singleton when no `groups` are supplied (default 01.works,
+ * shown once app-wide), or a fresh `createBranding({ groups })` instance for a
+ * custom configuration. Exported for testing — prefer `<Branding>`.
+ */
+export function resolveBrandingShow(
+  groups?: BrandingGroup[],
+): (options?: BrandingOptions) => void {
+  return groups ? createBranding({ groups }) : showBranding;
+}
 
 /**
  * React hook that shows the 01.works developer-console branding once, after the
