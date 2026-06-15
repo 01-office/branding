@@ -12,8 +12,8 @@ existing 01.works branding becomes the **default preset** built on top of the ne
 primitives: calling `showBranding()` with no arguments produces exactly the
 output it does today.
 
-The package is renamed `@01.works/branding` → **`@01.works/console`**. The git
-repository name (`branding`) stays as-is for now to minimize churn.
+The package is renamed `@01.works/branding` → **`@01.works/console`**, and the
+git repository is renamed `01-office/branding` → **`01-office/console`** to match.
 
 ## Goals
 
@@ -111,12 +111,14 @@ string and CSS array. `showBranding()` walks its config groups and emits
 ## Backward compatibility
 
 The existing public API and its console output are preserved exactly. New API is
-purely additive. No major version bump required for behavior; the **package
-rename** (`branding` → `console`) is the only breaking change, mitigated by the
-package being at `0.1.0` and effectively unpublished.
+purely additive. No major version bump required for behavior; the **package and
+repository rename** (`branding` → `console`) is the only breaking change,
+mitigated by the package being at `0.1.0` and effectively unpublished.
 
 Migration notes captured in README: install path and import specifier change
-from `@01.works/branding` to `@01.works/console`.
+from `@01.works/branding` (`github:01-office/branding`) to `@01.works/console`
+(`github:01-office/console`). `package.json` `name`, `repository.url`, `bugs.url`,
+and `homepage` are all updated to the new repo.
 
 ## Testing
 
@@ -135,5 +137,6 @@ All tests inject a fake `console` and assert on call arguments.
 
 ## Open questions
 
-None blocking. Repository rename and npm publish under the new name are deferred
-operational steps, tracked separately from this design.
+None blocking. The GitHub repository rename (`gh repo rename console`) and npm
+publish under the new name are operational steps executed outside the code
+changes; the code/docs in this repo are updated to assume the new name.
