@@ -13,7 +13,7 @@ function fakeConsole() {
   };
 }
 
-test("banner prints one info log per brand: header (caption + right-aligned url) then ASCII art, monospace and no color, no groups", () => {
+test("banner prints one info log per brand: caption, ASCII art, then right-aligned url below; monospace and no color, no groups", () => {
   const show = createBrandingBanner();
   const c = fakeConsole();
   show({ console: c });
@@ -30,22 +30,22 @@ test("banner prints one info log per brand: header (caption + right-aligned url)
     assert.ok(!call[2].includes("color"));
   }
 
-  // 01.works: header line has the caption at the start and the url at the end;
-  // the ASCII art follows.
+  // 01.works: caption is the first line; the url is the last line, right-aligned
+  // (indented with padding); the ASCII art sits between them.
   const works = c.calls[0][1].slice(2); // drop the leading "%c"
-  const worksHeader = works.split("\n")[0];
-  assert.ok(worksHeader.startsWith("Website by"));
-  assert.ok(worksHeader.endsWith("https://01.works"));
+  const worksLines = works.split("\n");
+  assert.equal(worksLines[0], "Website by");
+  assert.match(worksLines[worksLines.length - 1], /^ {2,}https:\/\/01\.works$/);
   assert.ok(works.includes("\\___/")); // a recognizable slice of the figlet art
-
-  // The url is pushed to the right: there is padding between caption and url.
-  assert.match(worksHeader, /^Website by {2,}https:\/\/01\.works$/);
 
   // 01.software: same structure.
   const software = c.calls[1][1].slice(2);
-  const softwareHeader = software.split("\n")[0];
-  assert.ok(softwareHeader.startsWith("Powered by"));
-  assert.ok(softwareHeader.endsWith("https://01.software"));
+  const softwareLines = software.split("\n");
+  assert.equal(softwareLines[0], "Powered by");
+  assert.match(
+    softwareLines[softwareLines.length - 1],
+    /^ {2,}https:\/\/01\.software$/,
+  );
   assert.ok(software.includes("\\___/"));
 });
 

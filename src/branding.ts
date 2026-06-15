@@ -69,29 +69,26 @@ const DEFAULT_BANNERS: BrandBanner[] = [
 ];
 
 /**
- * Build the combined log for one brand: a header line with the caption on the
- * left and the URL right-aligned to the banner's width, then the ASCII wordmark
- * below. The bare URL is auto-linked by the browser console.
+ * Build the combined log for one brand: the caption on its own line, then the
+ * ASCII wordmark, then the URL right-aligned to the banner's width on the line
+ * below the art. The bare URL is auto-linked by the browser console.
  */
 function formatBanner(banner: BrandBanner): string {
   const artWidth = Math.max(
     ...banner.art.split("\n").map((line) => line.length),
   );
-  const width = Math.max(
-    artWidth,
-    banner.caption.length + banner.link.length + 1,
-  );
-  const gap = " ".repeat(width - banner.caption.length - banner.link.length);
-  return `${banner.caption}${gap}${banner.link}\n${banner.art}`;
+  const width = Math.max(artWidth, banner.caption.length, banner.link.length);
+  const linkPad = " ".repeat(width - banner.link.length);
+  return `${banner.caption}\n${banner.art}\n${linkPad}${banner.link}`;
 }
 
 /**
  * Create the default 01.works branding printer. For each brand it prints a
- * single `console.info` log: a header line (caption left, URL right-aligned to
- * the banner width) followed by the ASCII-art wordmark (figlet "Standard"). Uses
- * a monospace `%c` style (no color) so the right-aligned URL stays flush, and no
- * console groups. Shows at most once per instance and is SSR-safe (no `window`
- * access, no import-time side effects).
+ * single `console.info` log: the caption, the ASCII-art wordmark (figlet
+ * "Standard"), and then the URL right-aligned beneath the art. Uses a monospace
+ * `%c` style (no color) so the right-aligned URL stays flush, and no console
+ * groups. Shows at most once per instance and is SSR-safe (no `window` access,
+ * no import-time side effects).
  */
 export function createBrandingBanner(): (options?: BrandingOptions) => void {
   let hasShown = false;

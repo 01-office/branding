@@ -37,13 +37,14 @@ test("default branding prints one combined info log per brand, once, with no con
     assert.equal(infoCalls[0]?.[1], "font-family: monospace");
     assert.equal(infoCalls[1]?.[1], "font-family: monospace");
 
-    const worksHeader = infoCalls[0]?.[0].slice(2).split("\n")[0];
-    assert.ok(worksHeader.startsWith("Website by"));
-    assert.ok(worksHeader.endsWith(WEBSITE_LINK));
+    // Caption is the first line; the URL is the last line (right-aligned).
+    const worksLines = infoCalls[0]?.[0].slice(2).split("\n");
+    assert.equal(worksLines[0], "Website by");
+    assert.ok(worksLines[worksLines.length - 1].endsWith(WEBSITE_LINK));
 
-    const poweredHeader = infoCalls[1]?.[0].slice(2).split("\n")[0];
-    assert.ok(poweredHeader.startsWith("Powered by"));
-    assert.ok(poweredHeader.endsWith(POWERED_LINK));
+    const poweredLines = infoCalls[1]?.[0].slice(2).split("\n");
+    assert.equal(poweredLines[0], "Powered by");
+    assert.ok(poweredLines[poweredLines.length - 1].endsWith(POWERED_LINK));
   } finally {
     globalThis.console.group = originalGroup;
     globalThis.console.info = originalInfo;
