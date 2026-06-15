@@ -11,7 +11,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 
 test("packed package exports a working showBranding function", () => {
-  const directory = mkdtempSync(join(tmpdir(), "branding-smoke-"));
+  const directory = mkdtempSync(join(tmpdir(), "console-smoke-"));
 
   try {
     // `pnpm pack` runs `prepare` (which builds dist) and writes the tarball into
@@ -40,7 +40,7 @@ test("packed package exports a working showBranding function", () => {
 
     const smokeScript = `
       import assert from "node:assert/strict";
-      import { showBranding } from "@01.works/branding";
+      import { showBranding } from "@01.works/console";
 
       const calls = [];
       assert.equal(typeof showBranding, "function");

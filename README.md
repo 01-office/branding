@@ -1,20 +1,20 @@
-# @01.works/branding
+# @01.works/console
 
 Usable shared branding utilities for 01.works.
 
 ## Installation
 
 ```sh
-pnpm add github:01-office/branding
+pnpm add github:01-office/console
 ```
 
 After the package is published to npm, install it with
-`pnpm add @01.works/branding`.
+`pnpm add @01.works/console`.
 
 ## Usage
 
 ```ts
-import { showBranding } from "@01.works/branding";
+import { showBranding } from "@01.works/console";
 
 showBranding();
 ```
@@ -46,13 +46,13 @@ type BrandingOptions = {
 
 ## React
 
-A React entry point is available at `@01.works/branding/react` for apps that
+A React entry point is available at `@01.works/console/react` for apps that
 prefer to drop branding in declaratively. React is an optional peer dependency —
 the core entry above has no React dependency.
 
 ```tsx
 // app/layout.tsx (Next.js App Router)
-import { Branding } from "@01.works/branding/react";
+import { Branding } from "@01.works/console/react";
 
 export default function RootLayout({ children }) {
   return (
@@ -76,7 +76,7 @@ component:
 
 ```tsx
 "use client";
-import { useBranding } from "@01.works/branding/react";
+import { useBranding } from "@01.works/console/react";
 
 export function Providers({ children }) {
   useBranding();
