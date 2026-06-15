@@ -44,6 +44,52 @@ type BrandingOptions = {
 };
 ```
 
+## Console styling
+
+The package is a lightweight wrapper for styled browser-console output. The
+01.works branding above is the default preset built on these primitives.
+
+```ts
+import { badge, log, segment } from "@01.works/console";
+
+log(badge("API", { background: "#0af", color: "#fff" }), " request sent");
+log(segment("hello", "color: hotpink; font-weight: 600"));
+```
+
+- `segment(text, style?)` — styled text. `style` is a CSS object (camelCase
+  keys) or a raw CSS string.
+- `badge(label, style?)` — a styled label with default padding/rounding.
+- `log(...parts)` — emit styled parts (and plain strings) to the global console.
+
+### Level logger
+
+```ts
+import { createLogger } from "@01.works/console/logger";
+
+const logger = createLogger();
+logger.info("loaded");
+logger.success("saved");
+logger.error("failed", err); // extra args keep interactive inspection
+```
+
+`createLogger(options?)` accepts `{ console, levels }` to inject a console
+target and override per-level styles. Levels: `info`, `warn`, `error`,
+`success`, `debug`.
+
+### Custom branding
+
+```ts
+import { createBranding } from "@01.works/console";
+
+const show = createBranding({
+  groups: [{ label: "Website by", link: "https://acme.com" }],
+});
+show();
+```
+
+`createBranding(config)` returns a once-guarded, SSR-safe `show()` function.
+`showBranding()` is the default 01.works instance.
+
 ## React
 
 A React entry point is available at `@01.works/console/react` for apps that
