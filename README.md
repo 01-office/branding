@@ -40,7 +40,7 @@ showBranding({ console: customConsole });
 
 ```ts
 type BrandingOptions = {
-  console?: Pick<Console, "info">;
+  console?: Pick<Console, "group" | "groupEnd" | "info">;
 };
 ```
 
