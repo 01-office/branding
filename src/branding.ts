@@ -43,13 +43,6 @@ export function createBranding(
   };
 }
 
-/** Caption style: dim gray, sits above each banner. */
-const CAPTION_STYLE = "color: #888888";
-/** 01.works banner color (blue) + monospace to preserve alignment. */
-const WORKS_STYLE = "font-family: monospace; color: #2563eb";
-/** 01.software banner color (violet) + monospace. */
-const SOFTWARE_STYLE = "font-family: monospace; color: #7c3aed";
-
 // figlet "Standard" font output, hardcoded (zero runtime dependency).
 // Double-quoted literals: the strings contain backslashes, apostrophes, and a
 // backtick (01.software), so they must NOT be template literals.
@@ -58,23 +51,47 @@ const WORKS_ART =
 const SOFTWARE_ART =
   "   ___  _              __ _                          \n  / _ \\/ |  ___  ___  / _| |___      ____ _ _ __ ___ \n | | | | | / __|/ _ \\| |_| __\\ \\ /\\ / / _` | '__/ _ \\\n | |_| | |_\\__ \\ (_) |  _| |_ \\ V  V / (_| | | |  __/\n  \\___/|_(_)___/\\___/|_|  \\__| \\_/\\_/ \\__,_|_|  \\___|";
 
+/**
+ * Monospace only (no color): keeps the right-aligned URL flush with the banner's
+ * right edge. Most browser consoles are monospace already; this guarantees it.
+ */
+const MONO_STYLE = "font-family: monospace";
+
 type BrandBanner = {
   caption: string;
   art: string;
-  style: string;
   link: string;
 };
 
 const DEFAULT_BANNERS: BrandBanner[] = [
-  { caption: "Website by", art: WORKS_ART, style: WORKS_STYLE, link: "https://01.works" },
-  { caption: "Powered by", art: SOFTWARE_ART, style: SOFTWARE_STYLE, link: "https://01.software" },
+  { caption: "Website by", art: WORKS_ART, link: "https://01.works" },
+  { caption: "Powered by", art: SOFTWARE_ART, link: "https://01.software" },
 ];
 
 /**
- * Create the default 01.works branding printer: emphasized ASCII-art banners
- * (figlet "Standard"), each with a dim caption, brand-colored `%c` art, and the
- * plain URL — no console groups. Shows at most once per instance and is SSR-safe
- * (no `window` access, no import-time side effects).
+ * Build the combined log for one brand: a header line with the caption on the
+ * left and the URL right-aligned to the banner's width, then the ASCII wordmark
+ * below. The bare URL is auto-linked by the browser console.
+ */
+function formatBanner(banner: BrandBanner): string {
+  const artWidth = Math.max(
+    ...banner.art.split("\n").map((line) => line.length),
+  );
+  const width = Math.max(
+    artWidth,
+    banner.caption.length + banner.link.length + 1,
+  );
+  const gap = " ".repeat(width - banner.caption.length - banner.link.length);
+  return `${banner.caption}${gap}${banner.link}\n${banner.art}`;
+}
+
+/**
+ * Create the default 01.works branding printer. For each brand it prints a
+ * single `console.info` log: a header line (caption left, URL right-aligned to
+ * the banner width) followed by the ASCII-art wordmark (figlet "Standard"). Uses
+ * a monospace `%c` style (no color) so the right-aligned URL stays flush, and no
+ * console groups. Shows at most once per instance and is SSR-safe (no `window`
+ * access, no import-time side effects).
  */
 export function createBrandingBanner(): (options?: BrandingOptions) => void {
   let hasShown = false;
@@ -85,9 +102,7 @@ export function createBrandingBanner(): (options?: BrandingOptions) => void {
     hasShown = true;
     const consoleTarget = options.console ?? globalThis.console;
     for (const banner of DEFAULT_BANNERS) {
-      consoleTarget.info(`%c${banner.caption}`, CAPTION_STYLE);
-      consoleTarget.info(`%c${banner.art}`, banner.style);
-      consoleTarget.info(banner.link);
+      consoleTarget.info(`%c${formatBanner(banner)}`, MONO_STYLE);
     }
   };
 }

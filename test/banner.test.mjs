@@ -13,30 +13,40 @@ function fakeConsole() {
   };
 }
 
-test("banner prints captions, colored art, and urls via info with no console groups", () => {
+test("banner prints one info log per brand: header (caption + right-aligned url) then ASCII art, monospace and no color, no groups", () => {
   const show = createBrandingBanner();
   const c = fakeConsole();
   show({ console: c });
 
-  // Exactly six info calls, nothing else.
-  assert.equal(c.calls.length, 6);
+  // One info call per brand — two total, nothing else.
+  assert.equal(c.calls.length, 2);
   assert.ok(c.calls.every((call) => call[0] === "info"));
 
-  // Captions are %c-styled and dim.
-  assert.equal(c.calls[0][1], "%cWebsite by");
-  assert.equal(c.calls[0][2], "color: #888888");
-  assert.equal(c.calls[3][1], "%cPowered by");
-  assert.equal(c.calls[3][2], "color: #888888");
+  for (const call of c.calls) {
+    // [ "info", "%c<content>", "font-family: monospace" ]
+    assert.equal(call.length, 3);
+    assert.match(call[1], /^%c/);
+    assert.equal(call[2], "font-family: monospace");
+    assert.ok(!call[2].includes("color"));
+  }
 
-  // Art lines are %c-styled with the brand colors.
-  assert.match(c.calls[1][1], /^%c/);
-  assert.match(c.calls[1][2], /#2563eb/);
-  assert.match(c.calls[4][1], /^%c/);
-  assert.match(c.calls[4][2], /#7c3aed/);
+  // 01.works: header line has the caption at the start and the url at the end;
+  // the ASCII art follows.
+  const works = c.calls[0][1].slice(2); // drop the leading "%c"
+  const worksHeader = works.split("\n")[0];
+  assert.ok(worksHeader.startsWith("Website by"));
+  assert.ok(worksHeader.endsWith("https://01.works"));
+  assert.ok(works.includes("\\___/")); // a recognizable slice of the figlet art
 
-  // Plain clickable URLs.
-  assert.equal(c.calls[2][1], "https://01.works");
-  assert.equal(c.calls[5][1], "https://01.software");
+  // The url is pushed to the right: there is padding between caption and url.
+  assert.match(worksHeader, /^Website by {2,}https:\/\/01\.works$/);
+
+  // 01.software: same structure.
+  const software = c.calls[1][1].slice(2);
+  const softwareHeader = software.split("\n")[0];
+  assert.ok(softwareHeader.startsWith("Powered by"));
+  assert.ok(softwareHeader.endsWith("https://01.software"));
+  assert.ok(software.includes("\\___/"));
 });
 
 test("banner shows at most once per instance", () => {
@@ -44,5 +54,5 @@ test("banner shows at most once per instance", () => {
   const c = fakeConsole();
   show({ console: c });
   show({ console: c });
-  assert.equal(c.calls.length, 6);
+  assert.equal(c.calls.length, 2);
 });

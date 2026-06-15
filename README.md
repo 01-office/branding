@@ -30,9 +30,11 @@ side effects.
 
 ### `showBranding(options?: BrandingOptions): void`
 
-Logs the 01.works branding with `console.info`: emphasized ASCII-art banners for
-`01.works` (blue) and `01.software` (violet), styled with the console's `%c`
-formatting, each with a dim caption and its URL. No console groups are used.
+Logs the 01.works branding with `console.info`: one log per brand, each a header
+line (caption on the left, URL right-aligned to the banner width) followed by an
+ASCII-art wordmark for `01.works` and `01.software`. Rendered in monospace (via
+`%c`, no color) so the right-aligned URL stays flush; the bare URL is auto-linked
+by the browser console. No console groups are used.
 
 Pass a console-compatible target when the message should use a specific logger:
 

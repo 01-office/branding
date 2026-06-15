@@ -9,10 +9,17 @@
 
 Replace the default branding output. Today `showBranding()` prints two
 `console.group` blocks ("Website by" → https://01.works, "Powered by" →
-https://01.software). The new default drops console groups entirely and prints
-two emphasized ASCII-art banners (figlet "Standard" font) for `01.works` and
-`01.software`, each styled with a brand color via `%c` and accompanied by a dim
-caption and the plain URL.
+https://01.software). The new default drops console groups entirely and prints,
+**per brand, one combined `console.info` log**: a header line (caption on the
+left, URL right-aligned to the banner width) followed by an ASCII-art wordmark
+(figlet "Standard") for `01.works` and `01.software`. Rendered in monospace via a
+single `%c` style (no color) so the right-aligned URL stays flush; the bare URL
+is auto-linked by the browser console.
+
+> Evolution note: an earlier iteration of this design used per-line `%c` brand
+> colors (blue/violet) and six separate `info` calls (caption / art / URL per
+> brand). The final design — captured below — collapses each brand to one log,
+> right-aligns the URL, and uses monospace only (no color).
 
 The generic `createBranding({ groups })` factory — used for custom branding and
 by the React `groups` prop — is **unchanged** (it keeps its `console.group`
@@ -21,8 +28,9 @@ based, labeled-link rendering). Only the default preset gets the banner.
 ## Goals
 
 - Default `showBranding()` shows ASCII-art banners, no `console.group`.
-- Emphasis via `%c`: `01.works` blue (`#2563eb`), `01.software` violet
-  (`#7c3aed`), monospace to preserve alignment; dim captions; plain URLs.
+- One combined `console.info` log per brand: header (caption left, URL
+  right-aligned to the banner width) + ASCII art. Monospace via a single `%c`
+  style, no color, so the right-aligned URL stays flush.
 - Keep zero runtime dependencies — banners are hardcoded string constants (no
   runtime figlet).
 - Preserve once-per-instance guard, SSR safety, and `console` injection.
@@ -37,20 +45,24 @@ based, labeled-link rendering). Only the default preset gets the banner.
 
 ## Output
 
-For each brand, three `console.info` calls, in order, with no group/groupEnd:
+For each brand, ONE `console.info` call (two total), no group/groupEnd. Each call
+is `info("%c" + content, "font-family: monospace")`, where `content` is a header
+line (caption left, URL right-aligned to the banner width) plus the ASCII art:
 
 ```
-%cWebsite by              caption,  style "color: #888888"
-%c<01.works ASCII art>    banner,   style "font-family: monospace; color: #2563eb"
-https://01.works          url,      plain string (clickable)
+Website by            https://01.works
+   ___  _                    _
+  / _ \/ |_      _____  _ __| | _____
+ ...
 
-%cPowered by              caption,  style "color: #888888"
-%c<01.software ASCII art> banner,   style "font-family: monospace; color: #7c3aed"
-https://01.software       url,      plain string
+Powered by                        https://01.software
+   ___  _              __ _
+ ...
 ```
 
-Total: 6 `info` calls. The banners render colored in the browser console; in a
-plain terminal the `%c`+style degrade to the raw ASCII text (harmless).
+Total: 2 `info` calls. Monospace (no color) keeps the right-aligned URL flush;
+the bare URL is auto-linked by the browser console. In a plain terminal the
+leading `%c`+style degrade harmlessly to raw text.
 
 ### Hardcoded ASCII constants
 
@@ -71,25 +83,32 @@ A dedicated banner renderer lives in `src/branding.ts`, separate from the
 generic `createBranding`:
 
 ```ts
-const CAPTION_STYLE = "color: #888888";
-const WORKS_STYLE = "font-family: monospace; color: #2563eb";
-const SOFTWARE_STYLE = "font-family: monospace; color: #7c3aed";
+// Monospace only (no color): keeps the right-aligned URL flush with the banner.
+const MONO_STYLE = "font-family: monospace";
 
 type BrandBanner = {
   caption: string;
   art: string;
-  style: string;
   link: string;
 };
 
 const DEFAULT_BANNERS: BrandBanner[] = [
-  { caption: "Website by", art: WORKS_ART, style: WORKS_STYLE, link: "https://01.works" },
-  { caption: "Powered by", art: SOFTWARE_ART, style: SOFTWARE_STYLE, link: "https://01.software" },
+  { caption: "Website by", art: WORKS_ART, link: "https://01.works" },
+  { caption: "Powered by", art: SOFTWARE_ART, link: "https://01.software" },
 ];
 
+// Header line: caption left, URL right-aligned to the banner width; art below.
+function formatBanner(banner: BrandBanner): string {
+  const artWidth = Math.max(...banner.art.split("\n").map((l) => l.length));
+  const width = Math.max(artWidth, banner.caption.length + banner.link.length + 1);
+  const gap = " ".repeat(width - banner.caption.length - banner.link.length);
+  return `${banner.caption}${gap}${banner.link}\n${banner.art}`;
+}
+
 /**
- * Create the default 01.works branding printer: emphasized ASCII-art banners,
- * once per instance, SSR-safe, no console groups.
+ * Create the default 01.works branding printer: one combined info log per brand
+ * (header + ASCII art), monospace, no color, once per instance, SSR-safe, no
+ * console groups.
  */
 export function createBrandingBanner(): (options?: BrandingOptions) => void {
   let hasShown = false;
@@ -97,10 +116,8 @@ export function createBrandingBanner(): (options?: BrandingOptions) => void {
     if (hasShown) return;
     hasShown = true;
     const consoleTarget = options.console ?? globalThis.console;
-    for (const b of DEFAULT_BANNERS) {
-      consoleTarget.info(`%c${b.caption}`, CAPTION_STYLE);
-      consoleTarget.info(`%c${b.art}`, b.style);
-      consoleTarget.info(b.link);
+    for (const banner of DEFAULT_BANNERS) {
+      consoleTarget.info(`%c${formatBanner(banner)}`, MONO_STYLE);
     }
   };
 }
@@ -130,17 +147,19 @@ export function createBrandingBanner(): (options?: BrandingOptions) => void {
   (generic groups) — verify it stays green.
 - **`test/index.test.mjs`** — rewrite the default-output assertions:
   - `showBranding()` makes no `group`/`groupEnd` calls.
-  - It makes 6 `info` calls: for each brand a `%c`-caption, a `%c`-art, and a
-    plain URL. Assert by structure: the URLs `https://01.works` and
-    `https://01.software` appear as plain `info` args; the caption args start
-    with `%cWebsite by` / `%cPowered by` and carry `CAPTION_STYLE`; the two art
-    args carry styles matching `/#2563eb/` and `/#7c3aed/` respectively.
-  - Once-guard: calling `showBranding()` twice still yields only 6 `info` calls.
+  - It makes 2 `info` calls (one per brand), each `("%c"+content, "font-family:
+    monospace")`. Assert by structure: each content header line starts with the
+    caption (`Website by` / `Powered by`) and ends with the URL; the style arg is
+    `font-family: monospace` (no color).
+  - Once-guard: calling `showBranding()` twice still yields only 2 `info` calls.
   - Custom `console` target: injected target receives the calls; global console
     untouched.
-- **`test/package-smoke.test.mjs`** — update assertions: collect `info` args;
-  assert the two URLs are present among them and that there are 6 `info` calls
-  (the injected `group`/`groupEnd` remain provided but unused).
+- **`test/banner.test.mjs`** — covers `createBrandingBanner` directly: 2 info
+  calls, monospace style (no color), header has caption-left/URL-right with
+  padding between, ASCII art present, once-guard.
+- **`test/package-smoke.test.mjs`** — update assertions: 2 `info` calls; assert
+  each URL appears within some call's content (the injected `group`/`groupEnd`
+  remain provided but unused).
 - **`test/react.test.mjs`** — unchanged; the default SSR no-log assertion still
   holds (banner runs only on the client).
 
