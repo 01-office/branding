@@ -57,6 +57,15 @@ const SOFTWARE_ART =
  */
 const MONO_STYLE = "font-family: monospace";
 
+/**
+ * Inverted chip for the URL: a solid background with contrasting text, so the
+ * link reads as a highlighted block instead of an underlined link. Tweak the two
+ * colors to taste. `text-decoration: none` attempts to drop the console's
+ * auto-link underline (browser-dependent).
+ */
+const LINK_STYLE =
+  "font-family: monospace; background: #111827; color: #ffffff; text-decoration: none";
+
 type BrandBanner = {
   caption: string;
   art: string;
@@ -69,26 +78,26 @@ const DEFAULT_BANNERS: BrandBanner[] = [
 ];
 
 /**
- * Build the combined log for one brand: the caption on its own line, then the
- * ASCII wordmark, then the URL right-aligned to the banner's width on the line
- * below the art. The bare URL is auto-linked by the browser console.
+ * Build the "head" of a brand's log: the caption on its own line, then the ASCII
+ * wordmark, then the right-aligning padding for the URL line. The URL itself is
+ * appended separately so it can carry its own (inverted) style.
  */
-function formatBanner(banner: BrandBanner): string {
+function bannerHead(banner: BrandBanner): string {
   const artWidth = Math.max(
     ...banner.art.split("\n").map((line) => line.length),
   );
   const width = Math.max(artWidth, banner.caption.length, banner.link.length);
   const linkPad = " ".repeat(width - banner.link.length);
-  return `${banner.caption}\n${banner.art}\n${linkPad}${banner.link}`;
+  return `${banner.caption}\n${banner.art}\n${linkPad}`;
 }
 
 /**
  * Create the default 01.works branding printer. For each brand it prints a
  * single `console.info` log: the caption, the ASCII-art wordmark (figlet
- * "Standard"), and then the URL right-aligned beneath the art. Uses a monospace
- * `%c` style (no color) so the right-aligned URL stays flush, and no console
- * groups. Shows at most once per instance and is SSR-safe (no `window` access,
- * no import-time side effects).
+ * "Standard"), and then the URL right-aligned beneath the art as an inverted
+ * chip. Two `%c` segments — monospace for the banner, inverted style for the URL
+ * — and no console groups. Shows at most once per instance and is SSR-safe (no
+ * `window` access, no import-time side effects).
  */
 export function createBrandingBanner(): (options?: BrandingOptions) => void {
   let hasShown = false;
@@ -99,7 +108,11 @@ export function createBrandingBanner(): (options?: BrandingOptions) => void {
     hasShown = true;
     const consoleTarget = options.console ?? globalThis.console;
     for (const banner of DEFAULT_BANNERS) {
-      consoleTarget.info(`%c${formatBanner(banner)}`, MONO_STYLE);
+      consoleTarget.info(
+        `%c${bannerHead(banner)}%c${banner.link}`,
+        MONO_STYLE,
+        LINK_STYLE,
+      );
     }
   };
 }

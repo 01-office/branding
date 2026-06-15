@@ -33,18 +33,17 @@ test("default branding prints one combined info log per brand, once, with no con
     assert.equal(groupEndCalls.length, 0);
     assert.equal(infoCalls.length, 2);
 
-    // Each log: "%c<header>\n<art>" + a monospace style (no color).
+    // Each log: "%c<head>%c<url>" + a monospace style + an inverted url style.
     assert.equal(infoCalls[0]?.[1], "font-family: monospace");
     assert.equal(infoCalls[1]?.[1], "font-family: monospace");
+    assert.match(infoCalls[0]?.[2], /background/);
+    assert.match(infoCalls[1]?.[2], /background/);
 
-    // Caption is the first line; the URL is the last line (right-aligned).
-    const worksLines = infoCalls[0]?.[0].slice(2).split("\n");
-    assert.equal(worksLines[0], "Website by");
-    assert.ok(worksLines[worksLines.length - 1].endsWith(WEBSITE_LINK));
-
-    const poweredLines = infoCalls[1]?.[0].slice(2).split("\n");
-    assert.equal(poweredLines[0], "Powered by");
-    assert.ok(poweredLines[poweredLines.length - 1].endsWith(POWERED_LINK));
+    // Caption starts each log; the URL ends it (after the second %c).
+    assert.ok(infoCalls[0]?.[0].startsWith("%cWebsite by"));
+    assert.ok(infoCalls[0]?.[0].endsWith(`%c${WEBSITE_LINK}`));
+    assert.ok(infoCalls[1]?.[0].startsWith("%cPowered by"));
+    assert.ok(infoCalls[1]?.[0].endsWith(`%c${POWERED_LINK}`));
   } finally {
     globalThis.console.group = originalGroup;
     globalThis.console.info = originalInfo;

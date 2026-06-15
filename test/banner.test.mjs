@@ -13,7 +13,7 @@ function fakeConsole() {
   };
 }
 
-test("banner prints one info log per brand: caption, ASCII art, then right-aligned url below; monospace and no color, no groups", () => {
+test("banner prints one info log per brand: caption, ASCII art, then right-aligned url chip below; banner monospace + url inverted style, no groups", () => {
   const show = createBrandingBanner();
   const c = fakeConsole();
   show({ console: c });
@@ -23,30 +23,31 @@ test("banner prints one info log per brand: caption, ASCII art, then right-align
   assert.ok(c.calls.every((call) => call[0] === "info"));
 
   for (const call of c.calls) {
-    // [ "info", "%c<content>", "font-family: monospace" ]
-    assert.equal(call.length, 3);
-    assert.match(call[1], /^%c/);
+    // [ "info", "%c<head>%c<url>", "<mono>", "<inverted>" ]
+    assert.equal(call.length, 4);
     assert.equal(call[2], "font-family: monospace");
-    assert.ok(!call[2].includes("color"));
+    // The URL chip is inverted: a background fill + a text color.
+    assert.match(call[3], /background/);
+    assert.match(call[3], /color/);
+    // The format has two %c segments: one for the banner, one for the url.
+    assert.equal(call[1].match(/%c/g)?.length, 2);
   }
 
-  // 01.works: caption is the first line; the url is the last line, right-aligned
-  // (indented with padding); the ASCII art sits between them.
-  const works = c.calls[0][1].slice(2); // drop the leading "%c"
-  const worksLines = works.split("\n");
-  assert.equal(worksLines[0], "Website by");
-  assert.match(worksLines[worksLines.length - 1], /^ {2,}https:\/\/01\.works$/);
-  assert.ok(works.includes("\\___/")); // a recognizable slice of the figlet art
+  // 01.works: caption first line; url is the last line, right-aligned (padding
+  // before the second %c); ASCII art between.
+  const worksLines = c.calls[0][1].split("\n");
+  assert.equal(worksLines[0], "%cWebsite by");
+  assert.match(worksLines[worksLines.length - 1], /^ {2,}%chttps:\/\/01\.works$/);
+  assert.ok(c.calls[0][1].includes("\\___/")); // a recognizable slice of the art
 
   // 01.software: same structure.
-  const software = c.calls[1][1].slice(2);
-  const softwareLines = software.split("\n");
-  assert.equal(softwareLines[0], "Powered by");
+  const softwareLines = c.calls[1][1].split("\n");
+  assert.equal(softwareLines[0], "%cPowered by");
   assert.match(
     softwareLines[softwareLines.length - 1],
-    /^ {2,}https:\/\/01\.software$/,
+    /^ {2,}%chttps:\/\/01\.software$/,
   );
-  assert.ok(software.includes("\\___/"));
+  assert.ok(c.calls[1][1].includes("\\___/"));
 });
 
 test("banner shows at most once per instance", () => {
