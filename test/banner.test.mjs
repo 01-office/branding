@@ -13,12 +13,19 @@ function fakeConsole() {
   };
 }
 
-test("banner prints only the 01.works brand by default: caption, ASCII art, then right-aligned url below; monospace and no color, no groups", () => {
+test("banner prints nothing by default", () => {
   const show = createBrandingBanner();
   const c = fakeConsole();
   show({ console: c });
 
-  // One info call for the default brand, nothing else.
+  assert.equal(c.calls.length, 0);
+});
+
+test("banner can include the 01.works brand when explicitly configured", () => {
+  const show = createBrandingBanner({ includeWorks: true });
+  const c = fakeConsole();
+  show({ console: c });
+
   assert.equal(c.calls.length, 1);
   assert.ok(c.calls.every((call) => call[0] === "info"));
 
@@ -41,7 +48,7 @@ test("banner prints only the 01.works brand by default: caption, ASCII art, then
 });
 
 test("banner can include the 01.software brand when explicitly configured", () => {
-  const show = createBrandingBanner({ includeSoftware: true });
+  const show = createBrandingBanner({ includeWorks: true, includeSoftware: true });
   const c = fakeConsole();
   show({ console: c });
 
@@ -59,8 +66,19 @@ test("banner can include the 01.software brand when explicitly configured", () =
   assert.ok(software.includes("\\___/"));
 });
 
+test("banner can include only the 01.software brand when explicitly configured", () => {
+  const show = createBrandingBanner({ includeSoftware: true });
+  const c = fakeConsole();
+  show({ console: c });
+
+  assert.equal(c.calls.length, 1);
+  assert.ok(c.calls.every((call) => call[0] === "info"));
+  assert.ok(c.calls[0]?.[1].includes("https://01.software"));
+  assert.ok(!c.calls[0]?.[1].includes("https://01.works"));
+});
+
 test("banner shows at most once per instance", () => {
-  const show = createBrandingBanner();
+  const show = createBrandingBanner({ includeWorks: true });
   const c = fakeConsole();
   show({ console: c });
   show({ console: c });

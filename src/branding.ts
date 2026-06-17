@@ -23,12 +23,12 @@ export type BrandingGroup = {
 
 /** Configuration describing which groups a branding instance prints. */
 export type BrandingConfig = {
-  /** Groups to print. These fully replace the default preset. */
+  /** Groups to print. Defaults to an empty list. */
   groups: BrandingGroup[];
 };
 
 const DEFAULT_CONFIG: BrandingConfig = {
-  groups: [{ label: "Website by", link: "https://01.works" }],
+  groups: [],
 };
 
 /**
@@ -75,7 +75,9 @@ type BrandBanner = {
 };
 
 export type BrandingBannerConfig = {
-  /** Also print the 01.software banner after the default 01.works banner. */
+  /** Print the bundled 01.works banner. */
+  includeWorks?: boolean;
+  /** Print the bundled 01.software banner. */
   includeSoftware?: boolean;
 };
 
@@ -106,20 +108,22 @@ function formatBanner(banner: BrandBanner): string {
 }
 
 /**
- * Create the default 01.works branding printer. It prints one `console.info`
- * log: the caption, the ASCII-art wordmark (figlet "Standard"), and then the
- * URL right-aligned beneath the art. Pass `{ includeSoftware: true }` to also
- * print the 01.software banner. Uses a monospace `%c` style (no color) so the
- * right-aligned URL stays flush, and no console groups. Shows at most once per
- * instance and is SSR-safe (no `window` access, no import-time side effects).
+ * Create a bundled branding printer. With no config it prints nothing. Pass
+ * `{ includeWorks: true }`, `{ includeSoftware: true }`, or both to print the
+ * corresponding banners. Each banner is one `console.info` log: the caption,
+ * the ASCII-art wordmark (figlet "Standard"), and then the URL right-aligned
+ * beneath the art. Uses a monospace `%c` style (no color) so the right-aligned
+ * URL stays flush, and no console groups. Shows at most once per instance and
+ * is SSR-safe (no `window` access, no import-time side effects).
  */
 export function createBrandingBanner(
   config: BrandingBannerConfig = {},
 ): BrandingPrinter {
   let hasShown = false;
-  const banners = config.includeSoftware
-    ? [WORKS_BANNER, SOFTWARE_BANNER]
-    : [WORKS_BANNER];
+  const banners = [
+    ...(config.includeWorks ? [WORKS_BANNER] : []),
+    ...(config.includeSoftware ? [SOFTWARE_BANNER] : []),
+  ];
   return function show(options: BrandingOptions = {}): void {
     if (hasShown) {
       return;

@@ -51,14 +51,39 @@ test("ships a 'use client' directive for the React entry", async () => {
   assert.match(source, /^["']use client["'];/);
 });
 
-test("resolveBrandingShow without groups returns the shared showBranding singleton", async () => {
+test("resolveBrandingShow without groups or bundled flags returns the shared showBranding singleton", async () => {
   const { resolveBrandingShow } = await import(moduleUrl);
   assert.equal(resolveBrandingShow(), showBranding);
 });
 
-test("resolveBrandingShow with includeSoftware returns a banner printer that includes 01.software", async () => {
+test("resolveBrandingShow with includeWorks returns a banner printer that includes 01.works", async () => {
   const { resolveBrandingShow } = await import(moduleUrl);
-  const show = resolveBrandingShow(undefined, true);
+  const show = resolveBrandingShow(undefined, { includeWorks: true });
+
+  // It must be a fresh instance, not the default singleton.
+  assert.notEqual(show, showBranding);
+
+  const calls = [];
+  show({
+    console: {
+      group: (...a) => calls.push(["group", ...a]),
+      info: (...a) => calls.push(["info", ...a]),
+      groupEnd: (...a) => calls.push(["groupEnd", ...a]),
+    },
+  });
+
+  assert.equal(calls.length, 1);
+  assert.ok(calls.every((call) => call[0] === "info"));
+  assert.ok(calls.some((call) => call[1].includes("https://01.works")));
+  assert.ok(calls.every((call) => !call[1].includes("https://01.software")));
+});
+
+test("resolveBrandingShow with includeWorks and includeSoftware returns both bundled banners", async () => {
+  const { resolveBrandingShow } = await import(moduleUrl);
+  const show = resolveBrandingShow(undefined, {
+    includeWorks: true,
+    includeSoftware: true,
+  });
 
   // It must be a fresh instance, not the default singleton.
   assert.notEqual(show, showBranding);

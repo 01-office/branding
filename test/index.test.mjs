@@ -12,7 +12,7 @@ async function importFreshBranding() {
   return import(url);
 }
 
-test("default branding prints only 01.works once, with no console groups", async () => {
+test("default branding prints nothing", async () => {
   const { showBranding } = await importFreshBranding();
   const groupCalls = [];
   const infoCalls = [];
@@ -31,16 +31,7 @@ test("default branding prints only 01.works once, with no console groups", async
 
     assert.equal(groupCalls.length, 0);
     assert.equal(groupEndCalls.length, 0);
-    assert.equal(infoCalls.length, 1);
-
-    // Log: "%c<header>\n<art>" + a monospace style (no color).
-    assert.equal(infoCalls[0]?.[1], "font-family: monospace");
-
-    // Caption is the first line; the URL is the last line (right-aligned).
-    const worksLines = infoCalls[0]?.[0].slice(2).split("\n");
-    assert.equal(worksLines[0], "Website by");
-    assert.ok(worksLines[worksLines.length - 1].endsWith(WEBSITE_LINK));
-    assert.ok(!infoCalls[0]?.[0].includes(POWERED_LINK));
+    assert.equal(infoCalls.length, 0);
   } finally {
     globalThis.console.group = originalGroup;
     globalThis.console.info = originalInfo;
@@ -49,7 +40,8 @@ test("default branding prints only 01.works once, with no console groups", async
 });
 
 test("uses the supplied console target", async () => {
-  const { showBranding } = await importFreshBranding();
+  const { createBrandingBanner } = await importFreshBranding();
+  const show = createBrandingBanner({ includeWorks: true });
   const calls = [];
   const globalCalls = [];
   const originalGroup = globalThis.console.group;
@@ -66,7 +58,7 @@ test("uses the supplied console target", async () => {
   globalThis.console.groupEnd = (...args) => globalCalls.push(args);
 
   try {
-    showBranding({ console: target });
+    show({ console: target });
   } finally {
     globalThis.console.group = originalGroup;
     globalThis.console.info = originalInfo;

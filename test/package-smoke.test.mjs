@@ -12,6 +12,9 @@ import { test } from "node:test";
 
 test("packed package exports a working showBranding function", () => {
   const directory = mkdtempSync(join(tmpdir(), "console-smoke-"));
+  const packEnv = { ...process.env };
+  delete packEnv.npm_config_dry_run;
+  delete packEnv.NPM_CONFIG_DRY_RUN;
 
   try {
     // `pnpm pack` runs `prepare` (which builds dist) and writes the tarball into
@@ -20,7 +23,7 @@ test("packed package exports a working showBranding function", () => {
     execFileSync(
       "pnpm",
       ["pack", "--pack-destination", directory],
-      { encoding: "utf8", stdio: "pipe" },
+      { encoding: "utf8", env: packEnv, stdio: "pipe" },
     );
     const filename = readdirSync(directory).find((file) =>
       file.endsWith(".tgz"),
@@ -40,7 +43,7 @@ test("packed package exports a working showBranding function", () => {
 
     const smokeScript = `
       import assert from "node:assert/strict";
-      import { showBranding } from "@01.works/console";
+      import { createBrandingBanner, showBranding } from "@01.works/console";
 
       const calls = [];
       assert.equal(typeof showBranding, "function");
@@ -51,9 +54,20 @@ test("packed package exports a working showBranding function", () => {
           groupEnd: () => {},
         },
       });
-        assert.equal(calls.length, 1);
-        assert.ok(calls.some((args) => args[0].includes("https://01.works")));
-        assert.ok(calls.every((args) => !args[0].includes("https://01.software")));
+      assert.equal(calls.length, 0);
+
+      const showWorks = createBrandingBanner({ includeWorks: true });
+      assert.equal(typeof showWorks, "function");
+      showWorks({
+        console: {
+          group: () => {},
+          info: (...args) => calls.push(args),
+          groupEnd: () => {},
+        },
+      });
+      assert.equal(calls.length, 1);
+      assert.ok(calls.some((args) => args[0].includes("https://01.works")));
+      assert.ok(calls.every((args) => !args[0].includes("https://01.software")));
     `;
 
     execFileSync("node", ["--input-type=module", "--eval", smokeScript], {
