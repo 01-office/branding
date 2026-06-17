@@ -4,5 +4,5 @@ export * from "./branding.js";
 
 import { createBrandingBanner } from "./branding.js";
 
-/** Show the default 01.works developer-console branding (once per instance). */
+/** Shared no-op branding printer. Pass explicit options to createBrandingBanner for bundled brands. */
 export const showBranding = createBrandingBanner();

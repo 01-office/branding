@@ -22,9 +22,10 @@ import { showBranding } from "@01.works/console";
 showBranding();
 ```
 
-The package does not run automatically. Call `showBranding()` explicitly where
-you want the styled developer-console message to appear. Repeated calls from
-the same module instance produce only one message.
+The package does not run automatically. The shared `showBranding()` export is a
+once-guarded no-op by default; create an explicit bundled branding printer when
+you want the styled developer-console message to appear. Repeated calls from the
+same printer instance produce only one message.
 
 `showBranding()` is SSR-safe: it does not access `window` and has no import-time
 side effects.
@@ -33,10 +34,9 @@ side effects.
 
 ### `showBranding(options?: BrandingOptions): void`
 
-Logs the 01.works branding with `console.info`: the caption, an ASCII-art
-wordmark for `01.works`, then the URL right-aligned on the line below the art.
-Rendered in monospace (via `%c`, no color) so the right-aligned URL stays flush;
-the bare URL is auto-linked by the browser console. No console groups are used.
+Default shared branding printer. It is once-guarded and SSR-safe, but does not
+log bundled branding unless you create a configured printer with
+`createBrandingBanner`.
 
 Pass a console-compatible target when the message should use a specific logger:
 
@@ -53,18 +53,24 @@ type BrandingConsole = Pick<Console, "group" | "groupEnd" | "info">;
 type BrandingPrinter = (options?: BrandingOptions) => void;
 ```
 
-To include the 01.software banner from the core API, create an opt-in banner
-printer:
+To include bundled brand banners from the core API, create an opt-in banner
+printer. Each enabled brand logs with `console.info`: the caption, an ASCII-art
+wordmark, then the URL right-aligned on the line below the art. Banners are
+rendered in monospace (via `%c`, no color), and no console groups are used.
 
 ```ts
 import { createBrandingBanner } from "@01.works/console";
 
-const show = createBrandingBanner({ includeSoftware: true });
+const show = createBrandingBanner({
+  includeWorks: true,
+  includeSoftware: true,
+});
 show({ console: customConsole });
 ```
 
 ```ts
 type BrandingBannerConfig = {
+  includeWorks?: boolean;
   includeSoftware?: boolean;
 };
 ```
@@ -72,7 +78,7 @@ type BrandingBannerConfig = {
 ## Console styling
 
 The package is a lightweight wrapper for styled browser-console output. The
-01.works branding above is the default preset built on these primitives.
+bundled 01.works and 01.software banners above are built on these primitives.
 
 ```ts
 import { badge, log, segment } from "@01.works/console";
@@ -113,8 +119,8 @@ show({ console: customConsole });
 ```
 
 `createBranding(config)` returns a once-guarded, SSR-safe `show()` function.
-`showBranding()` is the default 01.works instance. Custom `groups` fully replace
-the default preset.
+Custom `groups` are separate from the bundled banner flags and use console
+groups instead of ASCII-art banners.
 
 ```ts
 type BrandingGroup = {
@@ -142,47 +148,49 @@ export default function RootLayout({ children }) {
     <html>
       <body>
         {children}
-        <Branding />
+        <Branding includeWorks />
       </body>
     </html>
   );
 }
 ```
 
-`Branding` is a renderless component (it returns `null`) that shows the branding
-once, after mount. It ships a `"use client"` directive, so it works inside
-Server Components without extra wrapping. SSR-safe: nothing is logged during
-server rendering.
+`Branding` is a renderless component (it returns `null`) that shows configured
+branding once, after mount. It ships a `"use client"` directive, so it works
+inside Server Components without extra wrapping. SSR-safe: nothing is logged
+during server rendering.
 
-Pass `groups` to show custom branding instead of the 01.works default (any
+Pass `groups` to show custom grouped branding instead of bundled banners (any
 console target can still be injected with `console`):
 
 ```tsx
 <Branding groups={[{ label: "Website by", link: "https://acme.com" }]} />
 ```
 
-Pass `includeSoftware` to include the 01.software banner alongside the default
-01.works banner:
+Pass `includeWorks` and/or `includeSoftware` to include bundled banners:
 
 ```tsx
+<Branding includeWorks />
 <Branding includeSoftware />
+<Branding includeWorks includeSoftware />
 ```
 
 All React variants accept a console-compatible target:
 
 ```tsx
-<Branding includeSoftware console={customConsole} />
+<Branding includeWorks includeSoftware console={customConsole} />
 ```
 
 Both `Branding` and `useBranding` accept `BrandingProps` — the branding
-`groups`, optional `includeSoftware`, plus an optional `console` target. With no
-`groups`, the default 01.works branding is shown once for the whole app; with
-`includeSoftware`, 01.software is also shown. With `groups`, each mounted
-component shows its configured branding once and `includeSoftware` is ignored.
+`groups`, optional `includeWorks` and `includeSoftware`, plus an optional
+`console` target. With no `groups` or bundled brand flags, nothing is logged.
+With `groups`, each mounted component shows its configured branding once and
+bundled brand flags are ignored.
 
 ```ts
 type BrandingProps = BrandingOptions & {
   groups?: BrandingGroup[];
+  includeWorks?: boolean;
   includeSoftware?: boolean;
 };
 ```
@@ -195,13 +203,13 @@ component:
 import { useBranding } from "@01.works/console/react";
 
 export function Providers({ children }) {
-  useBranding();
+  useBranding({ includeWorks: true });
   return children;
 }
 ```
 
 Both accept the same `BrandingProps` (branding `groups`, optional
-`includeSoftware`, plus an optional `console` target).
+`includeWorks` and `includeSoftware`, plus an optional `console` target).
 
 ## Development
 
