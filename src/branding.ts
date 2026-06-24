@@ -95,8 +95,8 @@ const SOFTWARE_BANNER: BrandBanner = {
 
 /**
  * Build the combined log for one brand: the caption on its own line, then the
- * ASCII wordmark, then the URL right-aligned to the banner's width on the line
- * below the art. The bare URL is auto-linked by the browser console.
+ * ASCII wordmark, a blank line, then the URL right-aligned to the banner's width
+ * on the line below the art. The bare URL is auto-linked by the browser console.
  */
 function formatBanner(banner: BrandBanner): string {
   const artWidth = Math.max(
@@ -104,7 +104,7 @@ function formatBanner(banner: BrandBanner): string {
   );
   const width = Math.max(artWidth, banner.caption.length, banner.link.length);
   const linkPad = " ".repeat(width - banner.link.length);
-  return `${banner.caption}\n${banner.art}\n${linkPad}${banner.link}`;
+  return `${banner.caption}\n${banner.art}\n\n${linkPad}${banner.link}`;
 }
 
 /**
