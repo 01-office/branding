@@ -22,7 +22,7 @@ function App() {
         <strong>Website by</strong> 아래에 링크가 바로 보입니다.
       </p>
 
-      <Branding />
+      <Branding includeWorks includeSoftware />
     </main>
   );
 }

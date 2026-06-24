@@ -1,6 +1,6 @@
 {
   "name": "@01.works/console",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Shared console utilities for 01.works",
   "type": "module",
   "packageManager": "pnpm@10.33.0",
